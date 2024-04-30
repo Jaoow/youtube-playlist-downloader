@@ -94,17 +94,19 @@ class YouTubeDownloaderApp:
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([playlist_url])
 
-            json_files = [f for f in os.listdir(output_dir) if f.endswith(".info.json")]
-            for json_file in json_files:
-                video_info_path = os.path.join(output_dir, json_file)
-                with open(video_info_path, "r", encoding="utf-8") as f:
-                    video_info = json.load(f)
-                    description = video_info.get("description", "")
-                    video_title = video_info.get("title", "")
-                    valid_title = self.validate_file_name(video_title)
-                    if valid_title:
-                        with open(os.path.join(output_dir, f"{valid_title}.txt"), "w", encoding="utf-8") as desc_file:
-                            desc_file.write(description)
+            for root, dirs, files in os.walk(output_dir):
+                for file in files:
+                    if file.endswith(".info.json"):
+                        json_file_path = os.path.join(root, file)
+                        with open(json_file_path, "r", encoding="utf-8") as f:
+                            video_info = json.load(f)
+                            description = video_info.get("description", "")
+                            video_title = video_info.get("title", "")
+                            valid_title = self.validate_file_name(video_title)
+                            if valid_title:
+                                text_file_path = os.path.join(root, f"{valid_title}.txt")
+                                with open(text_file_path, "w", encoding="utf-8") as desc_file:
+                                    desc_file.write(description)
 
             progress_info=f"Todos os vídeos da playlist foram baixados para: \n{output_dir}."
             self.progress_label.config(text=progress_info)
